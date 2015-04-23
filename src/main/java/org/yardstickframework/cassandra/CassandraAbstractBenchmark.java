@@ -44,7 +44,7 @@ public abstract class CassandraAbstractBenchmark extends BenchmarkDriverAdapter 
 
         jcommander(cfg.commandLineArguments(), args, "<cassandra-driver>");
 
-        cluster = Cluster.builder().addContactPoint(args.host()).build();
+        cluster = Cluster.builder().addContactPoint(cfg.hostName()).build();
 
         dropKeySpaceQuietly(cluster, args.keySpaceName());
 

@@ -36,10 +36,6 @@ public class CassandraBenchmarkArguments {
     @Parameter(names = {"-ks", "--keySpaceName"}, description = "Key space", required = true)
     private String keySpaceName;
 
-    /** */
-    @Parameter(names = {"-h", "--host"}, description = "Cassandra node", required = true)
-    private String host;
-
     /**
      * @return Backups.
      */
@@ -59,13 +55,6 @@ public class CassandraBenchmarkArguments {
      */
     public String keySpaceName() {
         return keySpaceName;
-    }
-
-    /**
-     * @return Host.
-     */
-    public String host() {
-        return host;
     }
 
     /**

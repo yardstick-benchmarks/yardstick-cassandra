@@ -84,6 +84,8 @@ public class CassandraSqlQueryBenchmark extends CassandraQueryAbstractBenchmark 
             return true;
         }
         catch (Exception e ){
+            BenchmarkUtils.error("Failed query: " + e.getMessage(), null);
+
             return true;
         }
     }

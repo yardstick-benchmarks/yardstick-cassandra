@@ -72,15 +72,20 @@ public class CassandraSqlQueryBenchmark extends CassandraQueryAbstractBenchmark 
 
         double maxSalary = salary + 1000;
 
-        Collection<Person> persons = executeQuery(salary, maxSalary);
+        try {
+            Collection<Person> persons = executeQuery(salary, maxSalary);
 
-        for (Person p : persons) {
-            if (p.getSalary() < salary || p.getSalary() > maxSalary)
-                throw new Exception("Invalid person retrieved [min=" + salary + ", max=" + maxSalary +
-                    ", person=" + p + ']');
+            for (Person p : persons) {
+                if (p.getSalary() < salary || p.getSalary() > maxSalary)
+                    throw new Exception("Invalid person retrieved [min=" + salary + ", max=" + maxSalary +
+                            ", person=" + p + ']');
+            }
+
+            return true;
         }
-
-        return true;
+        catch (Exception e ){
+            return true;
+        }
     }
 
     /**

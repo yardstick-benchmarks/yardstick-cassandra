@@ -63,7 +63,7 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
     protected void insert(SampleValue sampleValue) {
         PreparedStatement ps = putPs.get();
 
-        session.execute(ps.bind(sampleValue));
+        session.execute(ps.bind(sampleValue.getId()));
     }
 
     /**

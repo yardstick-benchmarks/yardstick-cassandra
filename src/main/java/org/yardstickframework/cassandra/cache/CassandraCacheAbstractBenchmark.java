@@ -46,7 +46,7 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
             .setConsistencyLevel(ConsistencyLevel.ALL);
 
         getPs = session.prepare("SELECT * FROM SampleValue WHERE keyValue = ?")
-            .setConsistencyLevel(ConsistencyLevel.ALL);
+            .setConsistencyLevel(ConsistencyLevel.ONE);
     }
 
     /**

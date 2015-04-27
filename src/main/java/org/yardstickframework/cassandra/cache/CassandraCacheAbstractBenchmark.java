@@ -29,10 +29,10 @@ import java.util.*;
  */
 public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractBenchmark {
     /** Put prepared statement. */
-    private ThreadLocal<PreparedStatement> putPs;
+    private PreparedStatement putPs;
 
     /** Get prepared statement. */
-    private ThreadLocal<PreparedStatement> getPs;
+    private PreparedStatement getPs;
 
     /** {@inheritDoc} */
     @Override public void setUp(BenchmarkConfiguration cfg) throws Exception {
@@ -42,28 +42,18 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
             "  keyValue int PRIMARY KEY" +
             ");");
 
-        putPs = new ThreadLocal<PreparedStatement>(){
-            @Override protected PreparedStatement initialValue() {
-                return session.prepare("INSERT INTO SampleValue (keyValue) VALUES (?)")
-                    .setConsistencyLevel(ConsistencyLevel.ALL);
-            }
-        };
+        putPs = session.prepare("INSERT INTO SampleValue (keyValue) VALUES (?)")
+            .setConsistencyLevel(ConsistencyLevel.ALL);
 
-        getPs = new ThreadLocal<PreparedStatement>(){
-            @Override protected PreparedStatement initialValue() {
-                return session.prepare("SELECT * FROM SampleValue WHERE keyValue = ?")
-                    .setConsistencyLevel(ConsistencyLevel.ALL);
-            }
-        };
+        getPs = session.prepare("SELECT * FROM SampleValue WHERE keyValue = ?")
+            .setConsistencyLevel(ConsistencyLevel.ALL);
     }
 
     /**
      * @param sampleValue Sample value.
      */
     protected void insert(SampleValue sampleValue) {
-        PreparedStatement ps = putPs.get();
-
-        session.execute(ps.bind(sampleValue.getId()));
+        session.execute(putPs.bind(sampleValue.getId()));
     }
 
     /**
@@ -71,9 +61,7 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
      * @return Sample value.
      */
     protected SampleValue select(int key) {
-        PreparedStatement ps = getPs.get();
-
-        ResultSet result = session.execute(ps.bind(key));
+        ResultSet result = session.execute(getPs.bind(key));
 
         List<Row> rows = result.all();
 

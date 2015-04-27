@@ -28,6 +28,12 @@ import java.util.*;
  * Abstract cache benchmark.
  */
 public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractBenchmark {
+    /** Put prepared statement. */
+    private ThreadLocal<PreparedStatement> putPs;
+
+    /** Get prepared statement. */
+    private ThreadLocal<PreparedStatement> getPs;
+
     /** {@inheritDoc} */
     @Override public void setUp(BenchmarkConfiguration cfg) throws Exception {
         super.setUp(cfg);
@@ -35,13 +41,29 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
         session.execute("CREATE TABLE SampleValue (" +
             "  keyValue int PRIMARY KEY" +
             ");");
+
+        putPs = new ThreadLocal<PreparedStatement>(){
+            @Override protected PreparedStatement initialValue() {
+                return session.prepare("INSERT INTO SampleValue (keyValue) VALUES (?)")
+                    .setConsistencyLevel(ConsistencyLevel.ALL);
+            }
+        };
+
+        getPs = new ThreadLocal<PreparedStatement>(){
+            @Override protected PreparedStatement initialValue() {
+                return session.prepare("SELECT * FROM SampleValue WHERE keyValue = ?")
+                    .setConsistencyLevel(ConsistencyLevel.ALL);
+            }
+        };
     }
 
     /**
      * @param sampleValue Sample value.
      */
     protected void insert(SampleValue sampleValue) {
-        session.execute("INSERT INTO SampleValue (keyValue) VALUES (?)", sampleValue.getId());
+        PreparedStatement ps = putPs.get();
+
+        session.execute(ps.bind(sampleValue));
     }
 
     /**
@@ -49,7 +71,9 @@ public abstract class CassandraCacheAbstractBenchmark extends CassandraAbstractB
      * @return Sample value.
      */
     protected SampleValue select(int key) {
-        ResultSet result = session.execute("SELECT * FROM SampleValue WHERE keyValue = ?", key);
+        PreparedStatement ps = getPs.get();
+
+        ResultSet result = session.execute(ps.bind(key));
 
         List<Row> rows = result.all();
 

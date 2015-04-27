@@ -99,7 +99,8 @@ public abstract class CassandraAbstractBenchmark extends BenchmarkDriverAdapter 
     protected Session createKeySpace(Cluster cluster, String keySpaceName, int backups) {
         try (Session session = cluster.connect()) {
             session.execute("CREATE KEYSPACE " + keySpaceName
-                + " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : " + backups + " };");
+                + " WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : " + backups + " }"
+                + " AND DURABLE_WRITES = false;");
         }
 
         return cluster.connect(keySpaceName);

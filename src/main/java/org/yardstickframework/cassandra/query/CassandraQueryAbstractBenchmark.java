@@ -28,6 +28,9 @@ import java.util.*;
  * Abstract query benchmark.
  */
 public abstract class CassandraQueryAbstractBenchmark extends CassandraAbstractBenchmark {
+    /** Put prepared statement. */
+    private PreparedStatement putPs;
+
     /** {@inheritDoc} */
     @Override public void setUp(BenchmarkConfiguration cfg) throws Exception {
         super.setUp(cfg);
@@ -41,27 +44,29 @@ public abstract class CassandraQueryAbstractBenchmark extends CassandraAbstractB
             "  PRIMARY KEY (id, salary)" +
             ");"
         );
+
+        session.execute("CREATE INDEX salary_idx " +
+            "  ON Person (salary);");
+
+        putPs = session.prepare("INSERT INTO Person (id, firstName, lastName, salary) VALUES (?, ?, ?, ?)")
+            .setConsistencyLevel(ConsistencyLevel.ALL);
     }
 
     /**
      * @param p Person.
      */
     protected void put(Person p) {
-        session.execute("INSERT INTO Person (id, firstName, lastName, salary) VALUES (?, ?, ?, ?)",
-            p.getId(), p.getFirstName(), p.getLastName(), p.getSalary());
+        session.execute(putPs.bind(p.getId(), p.getFirstName(), p.getLastName(), p.getSalary()));
     }
 
     /**
      * @param persons Persons.
      */
     protected void put(List<Person> persons) {
-        PreparedStatement ps = session.prepare("INSERT INTO Person (id, firstName, lastName, salary) " +
-            "VALUES (?, ?, ?, ?)");
-
         BatchStatement batch = new BatchStatement();
 
         for (Person p : persons)
-            batch.add(ps.bind(p.getId(), p.getFirstName(), p.getLastName(), p.getSalary()));
+            batch.add(putPs.bind(p.getId(), p.getFirstName(), p.getLastName(), p.getSalary()));
 
         session.execute(batch);
     }

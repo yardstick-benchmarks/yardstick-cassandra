@@ -25,9 +25,15 @@ import java.util.concurrent.*;
  * Benchmark that performs put and query operations.
  */
 public class CassandraSqlQueryPutBenchmark extends CassandraQueryAbstractBenchmark {
+    /** Prepared statement. */
+    private PreparedStatement queryPs;
+
     /** {@inheritDoc} */
     @Override public void setUp(final BenchmarkConfiguration cfg) throws Exception {
         super.setUp(cfg);
+
+        queryPs = session.prepare("SELECT * FROM Person WHERE salary >= ? AND salary <= ?")
+            .setConsistencyLevel(ConsistencyLevel.ONE);
     }
 
     /** {@inheritDoc} */
@@ -63,8 +69,7 @@ public class CassandraSqlQueryPutBenchmark extends CassandraQueryAbstractBenchma
      */
     @SuppressWarnings("unchecked")
     private Collection<Person> executeQuery(double minSalary, double maxSalary) throws Exception {
-        List<Row> rows = session.execute("SELECT * FROM Person WHERE salary >= ? AND salary <= ? ALLOW FILTERING",
-            minSalary, maxSalary).all();
+        List<Row> rows = session.execute(queryPs.bind(minSalary, maxSalary)).all();
 
         List<Person> persons = new ArrayList<>(rows.size());
 

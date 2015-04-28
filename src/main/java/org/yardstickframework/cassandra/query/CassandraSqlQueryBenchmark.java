@@ -31,12 +31,18 @@ public class CassandraSqlQueryBenchmark extends CassandraQueryAbstractBenchmark 
     /** Number of threads that populate the cache for query test. */
     private static final int POPULATE_QUERY_THREAD_NUM = Runtime.getRuntime().availableProcessors() * 2;
 
+    /** Prepared statement. */
+    private PreparedStatement queryPs;
+
     /** Batch size. */
     public static final int BATCH_SIZE = 1000;
 
     /** {@inheritDoc} */
     @Override public void setUp(final BenchmarkConfiguration cfg) throws Exception {
         super.setUp(cfg);
+
+        queryPs = session.prepare("SELECT * FROM Person WHERE salary >= ? AND salary <= ?")
+            .setConsistencyLevel(ConsistencyLevel.ONE);
 
         println(cfg, "Populating query data...");
 
@@ -98,8 +104,7 @@ public class CassandraSqlQueryBenchmark extends CassandraQueryAbstractBenchmark 
      */
     @SuppressWarnings("unchecked")
     private Collection<Person> executeQuery(double minSalary, double maxSalary) throws Exception {
-        List<Row> rows = session.execute("SELECT * FROM Person WHERE salary >= ? AND salary <= ? ALLOW FILTERING",
-            minSalary, maxSalary).all();
+        List<Row> rows = session.execute(queryPs.bind(minSalary, maxSalary)).all();
 
         List<Person> persons = new ArrayList<>(rows.size());
 

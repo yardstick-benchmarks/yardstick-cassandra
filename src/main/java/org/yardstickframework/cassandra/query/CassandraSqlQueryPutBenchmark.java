@@ -32,7 +32,7 @@ public class CassandraSqlQueryPutBenchmark extends CassandraQueryAbstractBenchma
     @Override public void setUp(final BenchmarkConfiguration cfg) throws Exception {
         super.setUp(cfg);
 
-        queryPs = session.prepare("SELECT * FROM Person WHERE salary >= ? AND salary <= ?")
+        queryPs = session.prepare("SELECT * FROM Person WHERE salary >= ? AND salary <= ? ALLOW FILTERING")
             .setConsistencyLevel(ConsistencyLevel.ONE);
     }
 
